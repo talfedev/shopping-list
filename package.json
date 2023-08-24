@@ -29,6 +29,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"firebase": "^10.1.0",
 		"sass": "^1.64.1"
 	}
 }
