@@ -1,25 +1,43 @@
 import { onSnapshot } from 'firebase/firestore';
 import { writable } from 'svelte/store';
 import { itemsCollection } from '$lib/firebase/firestore';
-
-interface itemsStore {
-    id: string;
-    name: string;
-    category: string;
-    checked: boolean;
-    description?: string;
-    quantity?: string;
-}
+import type { Item } from '$lib/types/myTypes';
 
 const itemsStore = () => {
-	const { subscribe } = writable<itemsStore[]>([], (set) => {
-		const unsubscribe = onSnapshot(itemsCollection, (snapshot) => {
-			const items: itemsStore[] = [];
-            snapshot.forEach(doc => items.push({...doc.data(), id: doc.id} as itemsStore));
-            set(items);
+	const { subscribe } = writable<{[key:string]: Item}>({}, (set) => {
+		console.log('items store initialized');
+		const items: {[key:string]: Item} = {};
+		// const unsubscribe = onSnapshot(sortedItems, (snapshot) => {
+		// 	snapshot.docChanges().forEach(change => {
+		// 		if(change.type === 'removed') {
+		// 			items.splice(change.oldIndex, 1);
+		// 		} else if(change.type === 'added') {
+		// 			console.log(`${change.doc.data().name}:`,change.newIndex);
+		// 			items.push({...change.doc.data(), id: change.doc.id} as Item)
+		// 		} else if('modified') {
+		// 			console.log(`${change.doc.data().name} - old: ${change.oldIndex}, new: ${change.newIndex}`);
+		// 			items.splice(change.oldIndex,1);
+		// 			items.splice(change.newIndex,0,{...change.doc.data(), id: change.doc.id} as Item);
+		// 		}
+		// 	});
+		// 	set(items);
+		const unsubscribe = onSnapshot(itemsCollection,(snapshot) => {
+			console.log('itemsStore updated!');
+			snapshot.docChanges().forEach((change) => {
+				if (change.type === 'removed') {
+					delete items[change.doc.id];
+				} else if (change.type === 'added') {
+					console.log(`${change.doc.data().name}:`, change.newIndex);
+					items[change.doc.id] = { ...change.doc.data(), id: change.doc.id } as Item
+				} else if ('modified') {
+					console.log(`${change.doc.data().name} - old: ${change.oldIndex}, new: ${change.newIndex}`);
+					items[change.doc.id] = { ...change.doc.data(), id: change.doc.id } as Item;
+				}
+			});
+			set(items);
 		},
 		(error) => {
-			console.log("onSnapshot (categories) error:",error);
+			console.log('onSnapshot (items) error:', error);
 		});
 
 		return () => unsubscribe();

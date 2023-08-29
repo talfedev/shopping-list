@@ -1,10 +1,11 @@
 <svelte:options immutable />
 
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { signin, signout } from '$lib/firebase/auth';
 	import { user } from '$lib/stores/userStore';
-	import { categories } from '$lib/stores/categoriesStore';
+	import { categories, items } from '$lib/stores/allStores';
 	import { addCategory, deleteCategory, updateCategory } from '$lib/firebase/firestore';
 	import type { Category, NewCategory } from '$lib/types/myTypes';
 
@@ -15,6 +16,7 @@
 	let editModal: HTMLDialogElement | null;
 	let categoryInput = '';
 	let selectedCategoryId = '';
+	let uncheckedItems: {items: number}[] = [];
 
 	const currentUser = user;
 
@@ -31,15 +33,22 @@
 		editModal?.showModal();
 	};
 
-	const createNewCategory = (category: NewCategory) => {
+	const createNewCategory = (category: Omit<NewCategory, 'items'>) => {
 		addCategory(category);
 		closeModal();
 	};
 
-	const editCategory = (category: Category) => {
+	const editCategory = (category: Omit<Category, 'items'>) => {
 		updateCategory(category);
 		closeModal();
 	};
+
+	onMount(() => {
+		$categories.forEach(category => {
+			const numberOfUncheckedItems = category.items.filter(itemId => !$items[itemId]?.checked).length;
+			uncheckedItems = [...uncheckedItems, {items: numberOfUncheckedItems}];
+		})
+	});
 </script>
 
 <main>
@@ -49,7 +58,7 @@
 			<button on:click={() => (language = 'he')}>Hebrew</button>
 		</div>
 		<div class={language === 'en' ? 'categoriesL' : 'categoriesR'}>
-			{#each $categories as category}
+			{#each $categories as category, i}
 				<div class="category-wrap">
 					<a href="categories/{category.name}?id={category.id}">
 						<h3 class="{language === 'en' ? 'categoryL' : 'categoryR'} category">
@@ -57,8 +66,9 @@
 						</h3>
 					</a>
 					<div>
+						<span>{uncheckedItems[i]?.items}</span>
 						<button on:click={() => openEditModal(category)}>Edit</button>
-						<button on:click={() => deleteCategory(category.id)}>Delete</button>
+						<button on:click={() => deleteCategory(category)}>Delete</button>
 					</div>
 				</div>
 			{/each}

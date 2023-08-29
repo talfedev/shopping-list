@@ -1,17 +1,19 @@
 export interface Item {
-    category: string;
-    checked: boolean;
-    description?: string;
-    name: string;
-    quantity?: number;
     id: string;
+    name: string;
+    checked: boolean;
+    category: string;
+    description?: string;
+    quantity?: string;
 }
 
 export type NewItem = Omit<Item, "id">;
+export type ItemChecked = Pick<Item, 'checked' | 'id'>;
 
 export interface Category {
     name: string;
     id: string;
+    items: string[];
 }
 
 export type NewCategory = Omit<Category, "id">;

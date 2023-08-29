@@ -1,5 +1,8 @@
 <script>
 	import '../app.css';
+	import { items, categories } from '$lib/stores/allStores'
+
+	let refrences = [$items, $categories];
 </script>
 
 <h1>Shopping List</h1>
