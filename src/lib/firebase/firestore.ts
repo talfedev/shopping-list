@@ -194,14 +194,9 @@ export async function toggleItem(updatedItem: ItemChecked) {
 }
 
 //move an item inside a category
-export async function moveItem(category: Category, oldIndex: number, newIndex: number) {
-	//reorder the items like you want
-	const newItems = [...category.items];
-	const movingItem = newItems.splice(oldIndex, 1)[0];
-	newItems.splice(newIndex, 0, movingItem);
-	
+export async function moveItems(categoryId: string, newItems: string[]) {
 	//get category
-	const categoryRef = doc(db, 'categories', category.id);
+	const categoryRef = doc(db, 'categories', categoryId);
 
 	//set category's items to desired order
 	try{

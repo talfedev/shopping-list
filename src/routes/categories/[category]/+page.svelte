@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import type { Category, Item } from '$lib/types/myTypes';
 	import { items, categories } from '$lib/stores/allStores';
-	import { addItem, deleteItem, toggleItem, updateItem, transferItem } from '$lib/firebase/firestore';
+	import { addItem, deleteItem, toggleItem, updateItem, transferItem, moveItems } from '$lib/firebase/firestore';
 	import { user } from '$lib/stores/userStore';
 
 	export let data: PageData;
@@ -10,8 +10,10 @@
 	let newItemModal: HTMLDialogElement|null;
 	let editItemModal: HTMLDialogElement|null;
 	let transferModal: HTMLDialogElement|null;
+	let moveItemsModal: HTMLDialogElement|null;
 	let selectedItem: Item | null;
 	let selectedTransferCategory = 'default';
+	let moveMode: 'source'|'target' = 'source';
 
 	// this theoretically could be undefined
 	$: category = $categories.find(ctgry => ctgry.id === data.category.id) as Category;
@@ -20,6 +22,16 @@
 		name: '',
 		description: '',
 		quantity: '',
+	}
+
+	const moveItemInfo: {
+		items: string[];
+		from: number;
+		to: number;
+	} = {
+		items: [],
+		from: -1,
+		to: -1
 	}
 
 	const createNewItem = () => {
@@ -79,6 +91,7 @@
 		newItemModal?.close();
 		editItemModal?.close();
 		transferModal?.close();
+		moveItemsModal?.close();
 	}
 
 	const openTransferModal = (item: Item) => {
@@ -96,9 +109,42 @@
 			console.log('something is wrong with "selectedItem" or "selectedTransferCategory".');
 		}
 	}
+
+	const openMoveItemsModal = () => {
+		moveItemInfo.items = [...category.items];
+		moveItemInfo.from = -1;
+		moveItemInfo.to = -1;
+		
+		moveItemsModal?.showModal();
+	}
+
+	const reorderItems = () => {
+		//
+		moveItems(category.id, moveItemInfo.items);
+
+		closeModal();
+	}
+
+	const moveItemFromTo = (index: number) => {
+		if(moveMode === 'source') {
+			moveMode = 'target';
+			moveItemInfo.from = index;
+		} else if(moveMode === 'target') {
+			moveMode = 'source';
+			moveItemInfo.to = index;
+			const item = moveItemInfo.items.splice(moveItemInfo.from,1)[0];
+			moveItemInfo.items.splice(moveItemInfo.to,0,item);
+
+
+			moveItemInfo.items = moveItemInfo.items;
+			moveItemInfo.from = -1;
+			moveItemInfo.to = -1;
+		}
+	}
 </script>
 
 <section>
+	<button class="mode-button" on:click={openMoveItemsModal}>Move items</button>
 	<div class="back-arrow">
 		<a href="/">←</a>
 	</div>
@@ -174,11 +220,36 @@
 		<button on:click={closeModal}>close</button>
 		<button on:click={changeItemCategory}>Transfer</button>
 	</dialog>
+	<dialog bind:this={moveItemsModal}>
+		<h3>Move items</h3>
+		<p>Mode: {moveMode}</p>
+		<div class="move-items-wrapper">
+			{#each moveItemInfo.items as itemId, index (itemId)}
+				<p 
+				on:click={() => moveItemFromTo(index)}
+				class:moveOption={(moveMode === 'target') && (index !== moveItemInfo.from)}
+				class:moveSource={(moveMode === 'target') && (index === moveItemInfo.from)}
+					>{$items[itemId].name}</p>
+			{/each}
+		</div>
+		<br>
+		<button on:click={closeModal}>close</button>
+		<button on:click={reorderItems}>Done</button>
+	</dialog>
 </section>
 
 <style lang="scss">
 	section {
 		text-align: center;
+	}
+
+	.mode-button {
+		display: block;
+		width: 100%;
+		background-color: gray;
+		color: white;
+		border: none;
+		padding: 5px 0;
 	}
 
 	.back-arrow {
@@ -207,9 +278,11 @@
 		justify-content: space-between;
 		align-items: center;
 	}
-
+	
 	.item {
+		flex: 1;
 		padding: 5px 10px;
+		margin-right: 5px;
 	}
 
 	.crossed {
@@ -242,6 +315,21 @@
 
 		select {
 			margin-bottom: 10px;
+		}
+
+		.move-items-wrapper {
+			border: 1px solid black;
+			border-radius: 5px;
+			text-align: left;
+			padding: 10px;
+
+			.moveOption {
+				background-color: rgb(188, 239, 188);
+			}
+
+			.moveSource {
+				background-color: rgb(239, 219, 188);
+			}
 		}
 	}
 </style>
