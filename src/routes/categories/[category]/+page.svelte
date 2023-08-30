@@ -1,13 +1,17 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-	import type { Category } from '$lib/types/myTypes';
+	import type { Category, Item } from '$lib/types/myTypes';
 	import { items, categories } from '$lib/stores/allStores';
-	import { addItem, deleteItem, toggleItem } from '$lib/firebase/firestore';
+	import { addItem, deleteItem, toggleItem, updateItem, transferItem } from '$lib/firebase/firestore';
 	import { user } from '$lib/stores/userStore';
 
 	export let data: PageData;
 
 	let newItemModal: HTMLDialogElement|null;
+	let editItemModal: HTMLDialogElement|null;
+	let transferModal: HTMLDialogElement|null;
+	let selectedItem: Item | null;
+	let selectedTransferCategory = 'default';
 
 	// this theoretically could be undefined
 	$: category = $categories.find(ctgry => ctgry.id === data.category.id) as Category;
@@ -31,13 +35,66 @@
 		//add item to DB & app
 		addItem(newItem);
 
-		//close the modal
-		newItemModal?.close();
+		closeModal();
+	}
 
+	const openEditModal = (item: Item) => {
+		//populate the fields with item's data
+		itemFields.name = item.name;
+		itemFields.description = item.description || '';
+		itemFields.quantity = item.quantity || '';
+
+		//get an accessible reference to item
+		selectedItem = item;
+
+		//open edit modal
+		editItemModal?.showModal();
+	}
+
+	const editItem = () => {
+		//create new item object
+		const editedItem = {
+			name: itemFields.name,
+			description: itemFields.description,
+			quantity: itemFields.quantity,
+			id: selectedItem!.id
+		}
+
+		//add item to DB & app
+		updateItem(editedItem);
+
+		//close the modal
+		closeModal();
+	}
+
+	const closeModal = () => {
 		//clear input fields
 		itemFields.name = '';
 		itemFields.description = '';
 		itemFields.quantity = '';
+
+		//remove refrence to item
+		selectedItem = null;
+		
+		newItemModal?.close();
+		editItemModal?.close();
+		transferModal?.close();
+	}
+
+	const openTransferModal = (item: Item) => {
+		selectedTransferCategory = 'default';
+		selectedItem = item;
+		transferModal?.showModal();
+	}
+
+	const changeItemCategory = () => {
+		if(selectedItem && selectedTransferCategory !== 'default') {
+			transferItem(category.id, selectedTransferCategory, selectedItem?.id);
+			console.log('transfer item to new category!');
+			closeModal();
+		} else {
+			console.log('something is wrong with "selectedItem" or "selectedTransferCategory".');
+		}
 	}
 </script>
 
@@ -53,6 +110,8 @@
 					<p class="item">{$items[itemId].name}</p>
 					<div>
 						<input type="checkbox" checked={$items[itemId].checked} on:change={() => toggleItem({id: itemId, checked: !$items[itemId].checked})}>
+						<button on:click={() => openTransferModal($items[itemId])}>Transfer</button>
+						<button on:click={() => openEditModal($items[itemId])}>Edit</button>
 						<button on:click={() => deleteItem(itemId, category.id)}>Delete</button>
 					</div>
 				</div>
@@ -67,6 +126,8 @@
 					<p class="item crossed">{$items[itemId].name}</p>
 					<div>
 						<input type="checkbox" checked={$items[itemId].checked} on:change={() => toggleItem({id: itemId, checked: !$items[itemId].checked})}>
+						<button on:click={() => openTransferModal($items[itemId])}>Transfer</button>
+						<button on:click={() => openEditModal($items[itemId])}>Edit</button>
 						<button on:click={() => deleteItem(itemId, category.id)}>Delete</button>
 					</div>
 				</div>
@@ -85,8 +146,33 @@
 		<br>
 		<input type="text" bind:value={itemFields.quantity} placeholder="quantity">
 		<br>
-		<button on:click={() => newItemModal?.close()}>close</button>
+		<button on:click={closeModal}>close</button>
 		<button on:click={createNewItem}>Add</button>
+	</dialog>
+	<dialog bind:this={editItemModal}>
+		<h3>Edit Item</h3>
+		<input type="text" bind:value={itemFields.name} placeholder="name">
+		<br>
+		<input type="text" bind:value={itemFields.description} placeholder="description">
+		<br>
+		<input type="text" bind:value={itemFields.quantity} placeholder="quantity">
+		<br>
+		<button on:click={closeModal}>close</button>
+		<button on:click={editItem}>Edit</button>
+	</dialog>
+	<dialog bind:this={transferModal}>
+		<h3>Transfer Item</h3>
+		<select name="" id="" bind:value={selectedTransferCategory}>
+			<option value="default" selected>Choose category</option>
+			{#each $categories as categoryOption (categoryOption.id)}
+				{#if category.id !== categoryOption.id}
+					<option value={categoryOption.id}>{categoryOption.name}</option>
+				{/if}
+			{/each}
+		</select>
+		<br>
+		<button on:click={closeModal}>close</button>
+		<button on:click={changeItemCategory}>Transfer</button>
 	</dialog>
 </section>
 
@@ -152,6 +238,10 @@
 
 		button {
 			padding: 5px;
+		}
+
+		select {
+			margin-bottom: 10px;
 		}
 	}
 </style>

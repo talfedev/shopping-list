@@ -1,7 +1,6 @@
 <svelte:options immutable />
 
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import { signin, signout } from '$lib/firebase/auth';
 	import { user } from '$lib/stores/userStore';
@@ -16,7 +15,7 @@
 	let editModal: HTMLDialogElement | null;
 	let categoryInput = '';
 	let selectedCategoryId = '';
-	let uncheckedItems: {items: number}[] = [];
+	let uncheckedItems: { items: number }[] = [];
 
 	const currentUser = user;
 
@@ -42,13 +41,6 @@
 		updateCategory(category);
 		closeModal();
 	};
-
-	onMount(() => {
-		$categories.forEach(category => {
-			const numberOfUncheckedItems = category.items.filter(itemId => !$items[itemId]?.checked).length;
-			uncheckedItems = [...uncheckedItems, {items: numberOfUncheckedItems}];
-		})
-	});
 </script>
 
 <main>
@@ -58,7 +50,7 @@
 			<button on:click={() => (language = 'he')}>Hebrew</button>
 		</div>
 		<div class={language === 'en' ? 'categoriesL' : 'categoriesR'}>
-			{#each $categories as category, i}
+			{#each $categories as category, i (category.id)}
 				<div class="category-wrap">
 					<a href="categories/{category.name}?id={category.id}">
 						<h3 class="{language === 'en' ? 'categoryL' : 'categoryR'} category">
@@ -66,7 +58,7 @@
 						</h3>
 					</a>
 					<div>
-						<span>{uncheckedItems[i]?.items}</span>
+						<span>{category.items.filter((itemId) => !$items[itemId]?.checked).length}</span>
 						<button on:click={() => openEditModal(category)}>Edit</button>
 						<button on:click={() => deleteCategory(category)}>Delete</button>
 					</div>

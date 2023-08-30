@@ -160,7 +160,7 @@ export async function deleteItem(docId: string, categoryId: string) {
 }
 
 //edit an item
-export async function updateItem(updatedItem: Item) {
+export async function updateItem(updatedItem: Omit<Item, 'checked'|'category'>) {
 	if (updatedItem.name) {
 		console.log('trying to edit item');
 		const docRef = doc(db, 'items', updatedItem.id);
@@ -169,7 +169,6 @@ export async function updateItem(updatedItem: Item) {
 				name: updatedItem.name,
 				description: updatedItem.description,
 				quantity: updatedItem.quantity,
-				category: updatedItem.category
 			});
 			console.log('Item edited!');
 		} catch (err) {
@@ -195,14 +194,14 @@ export async function toggleItem(updatedItem: ItemChecked) {
 }
 
 //move an item inside a category
-export async function moveItem(categoryId: string, currentItems: string[], oldIndex: number, newIndex: number) {
+export async function moveItem(category: Category, oldIndex: number, newIndex: number) {
 	//reorder the items like you want
-	const newItems = [...currentItems];
+	const newItems = [...category.items];
 	const movingItem = newItems.splice(oldIndex, 1)[0];
 	newItems.splice(newIndex, 0, movingItem);
 	
 	//get category
-	const categoryRef = doc(db, 'categories', categoryId);
+	const categoryRef = doc(db, 'categories', category.id);
 
 	//set category's items to desired order
 	try{
@@ -220,8 +219,8 @@ export async function transferItem(sourceCategoryId: string, targetCategoryId: s
 	//
 	const batch = writeBatch(db);
 
-	const sourceRef = doc(db, 'categoreis', sourceCategoryId);
-	const targetRef = doc(db, 'categoreis', targetCategoryId);
+	const sourceRef = doc(db, 'categories', sourceCategoryId);
+	const targetRef = doc(db, 'categories', targetCategoryId);
 
 	batch.update(sourceRef, {items: arrayRemove(itemId)});
 	batch.update(targetRef, {items: arrayUnion(itemId)});
