@@ -15,7 +15,6 @@
 	let editModal: HTMLDialogElement | null;
 	let categoryInput = '';
 	let selectedCategoryId = '';
-	let uncheckedItems: { items: number }[] = [];
 
 	const currentUser = user;
 

@@ -15,8 +15,8 @@
 	let selectedTransferCategory = 'default';
 	let moveMode: 'source'|'target' = 'source';
 
-	// this theoretically could be undefined
-	$: category = $categories.find(ctgry => ctgry.id === data.category.id) as Category;
+	let category: Category;
+	$: category = $categories.find(ctgry => ctgry.id === data.category.id) || {id:'error',name:'Error',items: []};
 
 	const itemFields = {
 		name: '',
@@ -85,8 +85,9 @@
 		itemFields.description = '';
 		itemFields.quantity = '';
 
-		//remove refrence to item
+		//remove refrences
 		selectedItem = null;
+		selectedTransferCategory = 'default';
 		
 		newItemModal?.close();
 		editItemModal?.close();
@@ -102,8 +103,8 @@
 
 	const changeItemCategory = () => {
 		if(selectedItem && selectedTransferCategory !== 'default') {
-			transferItem(category.id, selectedTransferCategory, selectedItem?.id);
-			console.log('transfer item to new category!');
+			transferItem(category.id, selectedTransferCategory, selectedItem.id);
+			console.log('transfered item to new category!');
 			closeModal();
 		} else {
 			console.log('something is wrong with "selectedItem" or "selectedTransferCategory".');
@@ -119,9 +120,7 @@
 	}
 
 	const reorderItems = () => {
-		//
 		moveItems(category.id, moveItemInfo.items);
-
 		closeModal();
 	}
 
