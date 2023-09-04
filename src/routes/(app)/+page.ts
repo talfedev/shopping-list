@@ -1,7 +1,6 @@
 import type { PageLoad } from './$types';
 import { get } from 'svelte/store';
 import { user } from '$lib/stores/userStore';
-import { browser } from '$app/environment';
 import { redirect } from '@sveltejs/kit';
 
 export const load = (async () => {

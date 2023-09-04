@@ -3,7 +3,6 @@
 	import type { Category, Item } from '$lib/types/myTypes';
 	import { items, categories, orderedCategories } from '$lib/stores/allStores';
 	import { addItem, deleteItem, toggleItem, updateItem, transferItem, moveItems } from '$lib/firebase/firestore';
-	import { user } from '$lib/stores/userStore';
 
 	export let data: PageData;
 
