@@ -6,9 +6,7 @@ import { redirect } from '@sveltejs/kit';
 
 export const load = (async ({params, url}) => {
 	const currentUser = get(user);
-    if(browser) {
-        if(currentUser === null) throw redirect(303, "/login");
-    }
+	if(currentUser === null) throw redirect(303, "/login");
 	
 	const category = {
 		name: params.category,
