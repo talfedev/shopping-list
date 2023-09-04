@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import type { Category, Item } from '$lib/types/myTypes';
-	import { items, categories } from '$lib/stores/allStores';
+	import { items, categories, orderedCategories } from '$lib/stores/allStores';
 	import { addItem, deleteItem, toggleItem, updateItem, transferItem, moveItems } from '$lib/firebase/firestore';
 	import { user } from '$lib/stores/userStore';
 
@@ -16,7 +16,7 @@
 	let moveMode: 'source'|'target' = 'source';
 
 	let category: Category;
-	$: category = $categories.find(ctgry => ctgry.id === data.category.id) || {id:'error',name:'Error',items: []};
+	$: category = $categories[data.category.id || ''] || {id:'error',name:'Error',items: []};
 
 	const itemFields = {
 		name: '',
@@ -209,9 +209,9 @@
 		<h3>Transfer Item</h3>
 		<select name="" id="" bind:value={selectedTransferCategory}>
 			<option value="default" selected>Choose category</option>
-			{#each $categories as categoryOption (categoryOption.id)}
-				{#if category.id !== categoryOption.id}
-					<option value={categoryOption.id}>{categoryOption.name}</option>
+			{#each $orderedCategories as categoryId (categoryId)}
+				{#if category.id !== $categories[categoryId].id}
+					<option value={categoryId}>{$categories[categoryId].name}</option>
 				{/if}
 			{/each}
 		</select>
@@ -225,10 +225,12 @@
 		<div class="move-items-wrapper">
 			{#each moveItemInfo.items as itemId, index (itemId)}
 				<p 
-				on:click={() => moveItemFromTo(index)}
-				class:moveOption={(moveMode === 'target') && (index !== moveItemInfo.from)}
-				class:moveSource={(moveMode === 'target') && (index === moveItemInfo.from)}
-					>{$items[itemId].name}</p>
+				  on:click={() => moveItemFromTo(index)}
+				  class:moveOption={(moveMode === 'target') && (index !== moveItemInfo.from)}
+				  class:moveSource={(moveMode === 'target') && (index === moveItemInfo.from)}
+				>
+				{$items[itemId].name}
+				</p>
 			{/each}
 		</div>
 		<br>

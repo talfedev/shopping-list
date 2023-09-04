@@ -16,9 +16,21 @@ import {
 import { db } from '$lib/firebase/firebase';
 import type { Item, NewItem, NewCategory, Category, ItemChecked } from '$lib/types/myTypes';
 
+/**
+ * functions to update to work with lists collection:
+ * category add
+ * category remove
+ * move category
+ * 
+ * NOTE: adding, moving, and removing categories is hardcoded to
+ * one specific list. if you have more lists you'll have to
+ * change all the relevant functions to accept a list dynamically.
+ */
+
 // collections
 export const itemsCollection = collection(db, 'items');
 export const categoriesCollection = collection(db, 'categories');
+export const listsCollection = collection(db, 'lists');
 
 // DATABASE FUNCTIONS (to make life easier)
 
@@ -44,11 +56,23 @@ export async function getItems(id: string) {
 export async function addCategory(docFields: Omit<NewCategory, 'items'>) {
 	if (docFields.name) {
 		console.log('trying to create new category');
+		const batch = writeBatch(db);
+
+		//add (create category) request to batch
+		const categoryRef = doc(categoriesCollection);
+		batch.set(categoryRef, {...docFields, items: []});
+
+		//add (add category to lists' categories) request to batch
+		//** if you have more than one list you'll have to make this dynamic
+		const listsRef = doc(db, 'lists', '2EZFsjv75PFCjTKAzlpP');
+		batch.update(listsRef, {categories: arrayUnion(categoryRef.id)});
+
+		//commit batch
 		try {
-			const categoryDocRef = await addDoc(categoriesCollection, {...docFields, items: []});
-			console.log('new category id:', categoryDocRef.id);
+			const response = await batch.commit();
+			console.log('New category added!, batch response:',response);
 		} catch (err) {
-			console.log('failed to create new category:', err);
+			console.error('Failed to create a new category:', err);
 		}
 	} else {
 		console.log('Must provide name to create a category');
@@ -60,13 +84,21 @@ export async function deleteCategory(category: Category) {
 	console.log('trying to delete category');
 	const batch = writeBatch(db);
 
+	//get category's reference
 	const categoryRef = doc(db, 'categories', category.id);
 
+	//add a delete request to batch for every item in the category
 	category.items.forEach(item => {
 		const itemRef = doc(db, 'items', item);
 		batch.delete(itemRef);
 	})
 
+	//add (remove category from list's categories array) request to batch
+	//** list is not dynamic, change it if you need it to be **
+	const listRef = doc(db, 'lists', '2EZFsjv75PFCjTKAzlpP');
+	batch.update(listRef, {categories: arrayRemove(category.id)})
+
+	//add delete category request to batch
 	batch.delete(categoryRef);
 	
 	try {
@@ -92,6 +124,22 @@ export async function updateCategory(updatedCategory: Omit<Category, 'items'>) {
 		}
 	} else {
 		console.log('Category name cannot be empty.');
+	}
+}
+
+//move category
+export async function moveCategories(newOrder: string[]) {
+	//get list ref
+	const listRef = doc(db, 'lists', '2EZFsjv75PFCjTKAzlpP');
+
+	//update list's array
+	try {
+		const response = await updateDoc(listRef, {
+			categories: newOrder
+		});
+		console.log('moved category/ies!, response:', response);
+	} catch (err) {
+		console.log('failed to move category/ies. error:', err);
 	}
 }
 

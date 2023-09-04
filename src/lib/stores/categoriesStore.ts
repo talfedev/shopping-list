@@ -4,16 +4,18 @@ import { categoriesCollection } from '$lib/firebase/firestore';
 import type { Category } from '$lib/types/myTypes';
 
 const categoriesStore = () => {
-	const { subscribe } = writable<Category[]>([], (set) => {
+	const { subscribe } = writable<{[key: string]: Category}>({}, (set) => {
+		const categories: {[key: string]: Category} = {};
 		const unsubscribe = onSnapshot(categoriesCollection, (snapshot) => {
 			console.log('categoriesStore updated!');
-			const categories: Category[] = [];
-			snapshot.forEach(doc => {
-				categories.push({
-					id: doc.id,
-					name: doc.data().name,
-					items: doc.data().items? doc.data().items: [] 
-				});
+			snapshot.docChanges().forEach(change => {
+				if (change.type === 'removed') {
+					delete categories[change.doc.id];
+				} else if (change.type === 'added') {
+					categories[change.doc.id] = { ...change.doc.data(), id: change.doc.id } as Category;
+				} else if ('modified') {
+					categories[change.doc.id] = { ...change.doc.data(), id: change.doc.id } as Category;
+				}
 			});
             set(categories);
 		},

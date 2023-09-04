@@ -1,11 +1,11 @@
-<svelte:options immutable />
+<!-- <svelte:options immutable /> -->
 
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { signin, signout } from '$lib/firebase/auth';
 	import { user } from '$lib/stores/userStore';
-	import { categories, items } from '$lib/stores/allStores';
-	import { addCategory, deleteCategory, updateCategory } from '$lib/firebase/firestore';
+	import { categories, items, orderedCategories } from '$lib/stores/allStores';
+	import { addCategory, deleteCategory, updateCategory, moveCategories } from '$lib/firebase/firestore';
 	import type { Category, NewCategory } from '$lib/types/myTypes';
 
 	export let data: PageData;
@@ -13,14 +13,27 @@
 	let language: 'en' | 'he' = 'en';
 	let addModal: HTMLDialogElement | null;
 	let editModal: HTMLDialogElement | null;
+	let moveCategoriesModal: HTMLDialogElement | null;
 	let categoryInput = '';
 	let selectedCategoryId = '';
+	let moveMode: 'source'|'target' = 'source';
 
 	const currentUser = user;
+
+	const moveCategoryInfo: {
+		categories: string[];
+		from: number;
+		to: number;
+	} = {
+		categories: [],
+		from: -1,
+		to: -1
+	}
 
 	const closeModal = () => {
 		addModal?.close();
 		editModal?.close();
+		moveCategoriesModal?.close();
 		categoryInput = '';
 		selectedCategoryId = '';
 	};
@@ -40,6 +53,36 @@
 		updateCategory(category);
 		closeModal();
 	};
+
+	const openMoveCategoriesModal = () => {
+		moveCategoryInfo.categories = [...$orderedCategories];
+		moveCategoryInfo.from = -1;
+		moveCategoryInfo.to = -1;
+		
+		moveCategoriesModal?.showModal();
+	}
+
+	const reorderCategories = () => {
+		moveCategories(moveCategoryInfo.categories);
+		closeModal();
+	}
+
+	const moveCategoryFromTo = (index: number) => {
+		if(moveMode === 'source') {
+			moveMode = 'target';
+			moveCategoryInfo.from = index;
+		} else if(moveMode === 'target') {
+			moveMode = 'source';
+			moveCategoryInfo.to = index;
+			const category = moveCategoryInfo.categories.splice(moveCategoryInfo.from,1)[0];
+			moveCategoryInfo.categories.splice(moveCategoryInfo.to,0,category);
+
+
+			moveCategoryInfo.categories = moveCategoryInfo.categories;
+			moveCategoryInfo.from = -1;
+			moveCategoryInfo.to = -1;
+		}
+	}
 </script>
 
 <main>
@@ -47,21 +90,24 @@
 		<div class="languages">
 			<button on:click={() => (language = 'en')}>English</button>
 			<button on:click={() => (language = 'he')}>Hebrew</button>
+			<button on:click={openMoveCategoriesModal}>Move categories</button>
 		</div>
 		<div class={language === 'en' ? 'categoriesL' : 'categoriesR'}>
-			{#each $categories as category, i (category.id)}
-				<div class="category-wrap">
-					<a href="categories/{category.name}?id={category.id}">
-						<h3 class="{language === 'en' ? 'categoryL' : 'categoryR'} category">
-							{category.name}
-						</h3>
-					</a>
-					<div>
-						<span>{category.items.filter((itemId) => !$items[itemId]?.checked).length}</span>
-						<button on:click={() => openEditModal(category)}>Edit</button>
-						<button on:click={() => deleteCategory(category)}>Delete</button>
+			{#each $orderedCategories as categoryId (categoryId)}
+				{#if $categories[categoryId]}
+					<div class="category-wrap">
+						<a href="categories/{$categories[categoryId].name}?id={categoryId}">
+							<h3 class="{language === 'en' ? 'categoryL' : 'categoryR'} category">
+								{$categories[categoryId].name}
+							</h3>
+						</a>
+						<div>
+							<span>{$categories[categoryId].items.filter((itemId) => !$items[itemId]?.checked).length}</span>
+							<button on:click={() => openEditModal($categories[categoryId])}>Edit</button>
+							<button on:click={() => deleteCategory($categories[categoryId])}>Delete</button>
+						</div>
 					</div>
-				</div>
+				{/if}
 			{/each}
 		</div>
 		<br />
@@ -99,6 +145,24 @@
 			<button on:click={closeModal}>Close</button>
 		</dialog>
 	</div>
+	<dialog bind:this={moveCategoriesModal}>
+		<h3>Move Categories</h3>
+		<p>Mode: {moveMode}</p>
+		<div class="move-categories-wrapper">
+			{#each moveCategoryInfo.categories as categoryId, index (categoryId)}
+				<p 
+				  on:click={() => moveCategoryFromTo(index)}
+				  class:moveOption={(moveMode === 'target') && (index !== moveCategoryInfo.from)}
+				  class:moveSource={(moveMode === 'target') && (index === moveCategoryInfo.from)}
+				>
+				{$categories[categoryId]?.name}
+				</p>
+			{/each}
+		</div>
+		<br>
+		<button on:click={closeModal}>close</button>
+		<button on:click={reorderCategories}>Done</button>
+	</dialog>
 </main>
 
 <style lang="scss">
@@ -144,6 +208,11 @@
 		button {
 			text-decoration: none;
 		}
+
+		a {
+			flex: 1;
+			margin-right: 10px;
+		}
 	}
 
 	.category {
@@ -181,6 +250,21 @@
 
 		button {
 			padding: 5px;
+		}
+
+		.move-categories-wrapper {
+			border: 1px solid black;
+			border-radius: 5px;
+			text-align: left;
+			padding: 10px;
+
+			.moveOption {
+				background-color: rgb(188, 239, 188);
+			}
+
+			.moveSource {
+				background-color: rgb(239, 219, 188);
+			}
 		}
 	}
 </style>
