@@ -323,6 +323,8 @@
 			border-radius: 5px;
 			text-align: left;
 			padding: 10px;
+			max-height: 200px;
+			overflow: scroll;
 
 			.moveOption {
 				background-color: rgb(188, 239, 188);
