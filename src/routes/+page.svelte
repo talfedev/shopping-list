@@ -115,7 +115,7 @@
 			<button on:click={() => addModal?.showModal()}>Category +</button>
 		</div>
 		<br />
-		<p>hi {$currentUser?.displayName}</p>
+		<p>hi {$currentUser?.email}</p>
 		<button on:click={signout}>sign out</button>
 	{:else}
 		<p>you're not logged in</p>
