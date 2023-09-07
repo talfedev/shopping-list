@@ -44,15 +44,6 @@
 
 <main>
 	<p class="date">{date.getDate()} / {date.getMonth() + 1} / {date.getFullYear()}</p>
-	<!-- {#each $orderedCategories as categoryId (categoryId)}
-		<h2>{$categories[categoryId]?.name}</h2>
-		<hr />
-		{#each $categories[categoryId]?.items || [] as itemId (itemId)}
-            {#if $items[itemId] && !$items[itemId].checked}
-                <p>{$items[itemId].name} - {$items[itemId].quantity}</p>
-            {/if}
-        {/each}
-	{/each} -->
 	<div class="columns-wrapper">
 		{#each columns as col}
 			<div class="col">

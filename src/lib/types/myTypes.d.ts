@@ -18,6 +18,6 @@ export interface Category {
 
 export type NewCategory = Omit<Category, 'id'>;
 
-export function isCategory(object: Category | Item): object is Category {
-	return (object as Category).items !== undefined;
-}
+// export function isCategory(object: Category | Item): object is Category {
+// 	return (object as Category).items !== undefined;
+// }
