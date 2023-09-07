@@ -42,10 +42,6 @@
 </script>
 
 <main>
-	<!-- <div class="top">
-        <a href="/"><button>back</button></a>
-        <p class="date">{date.getDate()} / {date.getMonth() + 1} / {date.getFullYear()}</p>
-    </div> -->
 	<div class="columns-wrapper">
 		{#each columns as col}
 			<div class="col">
