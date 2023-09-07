@@ -7,6 +7,7 @@
 	import { categories, items, orderedCategories } from '$lib/stores/allStores';
 	import { addCategory, deleteCategory, updateCategory, moveCategories } from '$lib/firebase/firestore';
 	import type { Category, NewCategory } from '$lib/types/myTypes';
+	import { copyListAsText, shareFullList } from '$lib/helper-functions/shareList';
 
 	export let data: PageData;
 
@@ -114,6 +115,11 @@
 		<br />
 		<div>
 			<button on:click={() => addModal?.showModal()}>Category +</button>
+		</div>
+		<div>
+			<br>
+			<button on:click={() => shareFullList($orderedCategories, $categories, $items)}>Share</button>
+			<button on:click={() => copyListAsText($orderedCategories, $categories, $items)}>Copy list to clipboard</button>
 		</div>
 		<br />
 		<p>hi {$currentUser?.email}</p>
