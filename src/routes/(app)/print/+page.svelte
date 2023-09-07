@@ -8,8 +8,7 @@
 
 	const date = new Date();
 	let columns: (Category | Item)[][] = [[]];
-	const COL_SIZE = 52;
-	const CATEGORY_SIZE = 75;
+	const COL_SIZE = 57;
 	let itemsInCol = 0;
 	let currentCol = 0;
 
@@ -24,18 +23,18 @@
 				columns[currentCol] = [$categories[categoryId]];
 			}
 
-			Array(CATEGORY_SIZE)
-				.fill($items[$categories[categoryId].items[0]])
-				.forEach((item) => {
+			$categories[categoryId].items.forEach((itemId) => {
+				if(!$items[itemId].checked) {
 					if (itemsInCol <= COL_SIZE - 1) {
 						itemsInCol++;
-						columns[currentCol].push(item);
+						columns[currentCol].push($items[itemId]);
 					} else {
 						itemsInCol = 1;
 						currentCol++;
-						columns[currentCol] = [item];
+						columns[currentCol] = [$items[itemId]];
 					}
-				});
+				}
+			});
 		});
 	};
 
@@ -43,10 +42,10 @@
 </script>
 
 <main>
-    <div class="top">
+	<!-- <div class="top">
         <a href="/"><button>back</button></a>
         <p class="date">{date.getDate()} / {date.getMonth() + 1} / {date.getFullYear()}</p>
-    </div>
+    </div> -->
 	<div class="columns-wrapper">
 		{#each columns as col}
 			<div class="col">
@@ -55,7 +54,7 @@
 						<h2>{element.name}</h2>
 						<hr />
 					{:else}
-						<p>{element.name}</p>
+						<p>{element.name} - {element.quantity}</p>
 					{/if}
 				{/each}
 			</div>
@@ -79,17 +78,17 @@
 	}
 
 	.top {
-        display: flex;
-        gap: 40px;
+		display: flex;
+		gap: 40px;
 		justify-content: center;
-        align-items: center;
+		align-items: center;
 	}
 
 	.columns-wrapper {
 		display: flex;
 		justify-content: flex-start;
 		gap: 20px;
-        flex-wrap: wrap;
+		flex-wrap: wrap;
 	}
 
 	.col {

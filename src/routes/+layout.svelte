@@ -13,4 +13,10 @@
 		color: white;
 		padding: 5px 0;
 	}
+
+	@media print {
+		h1 {
+			display: none;
+		}
+	}
 </style>
