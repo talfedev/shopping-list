@@ -104,7 +104,7 @@
 							</h3>
 						</a>
 						<div>
-							<span>{$categories[categoryId].items.filter((itemId) => !$items[itemId]?.checked).length}</span>
+							<span>{$categories[categoryId].items.filter((itemId) => !$items[itemId]?.checked).length || ''}</span>
 							<button on:click={() => openEditModal($categories[categoryId])}>Edit</button>
 							<button on:click={() => deleteCategory($categories[categoryId])}>Delete</button>
 						</div>
