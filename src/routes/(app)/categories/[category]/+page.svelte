@@ -241,6 +241,8 @@
 <style lang="scss">
 	section {
 		text-align: center;
+		max-width: 600px;
+		margin: 0 auto;
 	}
 
 	.mode-button {

@@ -121,10 +121,6 @@
 		<p>you're not logged in</p>
 		<button on:click={signin}>signin/up</button>
 	{/if}
-	<div>
-		<br />
-		<a href="/login">To login page</a>
-	</div>
 	<div class="dialog">
 		<dialog bind:this={addModal}>
 			<h3>Category Name (new)</h3>
@@ -169,6 +165,8 @@
 	main {
 		text-align: center;
 		font-family: sans-serif;
+		max-width: 600px;
+		margin: 0 auto;
 	}
 
 	.languages {

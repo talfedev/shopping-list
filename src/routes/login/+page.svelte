@@ -34,12 +34,12 @@
 </script>
 
 <div class="main">
-	<h2>Login / Register</h2>
+	<h2>Sign in / Sign up</h2>
 	<div class="buttons">
 		<input bind:value={pageFields.email} type="email" placeholder="Email">
 		<input bind:value={pageFields.password} type="password" placeholder="Password">
 		<button on:click={handleSignin}>Sign in</button>
-		<button on:click={handleRegister}>Register</button>
+		<button on:click={handleRegister}>Sign up</button>
 		<button class="google" on:click={signin}>Google</button>
 	</div>
 	<!-- <div>
@@ -51,6 +51,8 @@
 	.main {
 		padding-top: 30px;
 		text-align: center;
+		max-width: 400px;
+		margin: 0 auto;
 	}
 
 	.buttons {
