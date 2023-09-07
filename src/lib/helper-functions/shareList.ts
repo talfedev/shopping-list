@@ -9,7 +9,7 @@ export const shareFullList = (order: string[], categories: { [key: string]: Cate
 
         categories[categoryId].items.forEach(itemId => {
             if(!items[itemId].checked) {
-                text += `- ${items[itemId].name}\n`;
+                text += `- ${items[itemId].name}: ${items[itemId].quantity}\n`;
             }
         })
     });
@@ -25,7 +25,7 @@ export const copyListAsText = (order: string[], categories: { [key: string]: Cat
 
         categories[categoryId].items.forEach(itemId => {
             if(!items[itemId].checked) {
-                text += `- ${items[itemId].name}\n`;
+                text += `- ${items[itemId].name}: ${items[itemId].quantity}\n`;
             }
         })
     });
@@ -40,7 +40,7 @@ export const shareCategory = (category: Category, items: { [key: string]: Item; 
     
     category.items.forEach(itemId => {
         if(!items[itemId].checked) {
-            text += `- ${items[itemId].name}\n`;
+            text += `- ${items[itemId].name}: ${items[itemId].quantity}\n`;
         }
     });
 
@@ -52,7 +52,7 @@ export const copyCategoryAsText = (category: Category, items: { [key: string]: I
     
     category.items.forEach(itemId => {
         if(!items[itemId].checked) {
-            text += `- ${items[itemId].name}\n`;
+            text += `- ${items[itemId].name}: ${items[itemId].quantity}\n`;
         }
     });
 
