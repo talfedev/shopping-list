@@ -43,7 +43,10 @@
 </script>
 
 <main>
-	<p class="date">{date.getDate()} / {date.getMonth() + 1} / {date.getFullYear()}</p>
+    <div class="top">
+        <a href="/"><button>back</button></a>
+        <p class="date">{date.getDate()} / {date.getMonth() + 1} / {date.getFullYear()}</p>
+    </div>
 	<div class="columns-wrapper">
 		{#each columns as col}
 			<div class="col">
@@ -75,8 +78,11 @@
 		margin: 4px 0 6px;
 	}
 
-	.date {
-		text-align: center;
+	.top {
+        display: flex;
+        gap: 40px;
+		justify-content: center;
+        align-items: center;
 	}
 
 	.columns-wrapper {

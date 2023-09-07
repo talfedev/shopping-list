@@ -91,6 +91,7 @@
 			<button on:click={() => (language = 'en')}>English</button>
 			<button on:click={() => (language = 'he')}>Hebrew</button>
 			<button on:click={openMoveCategoriesModal}>Move categories</button>
+			<a href="/print"><button>P</button></a>
 		</div>
 		<div class={language === 'en' ? 'categoriesL' : 'categoriesR'}>
 			{#each $orderedCategories as categoryId (categoryId)}
@@ -174,7 +175,7 @@
 		padding: 5px 0;
 		display: flex;
 		justify-content: center;
-		gap: 20px;
+		gap: 10px;
 
 		button {
 			padding: 5px 10px;
