@@ -3,6 +3,7 @@
 	import type { Category, Item } from '$lib/types/myTypes';
 	import { items, categories, orderedCategories } from '$lib/stores/allStores';
 	import { addItem, deleteItem, toggleItem, updateItem, transferItem, moveItems } from '$lib/firebase/firestore';
+	import { shareCategory, copyCategoryAsText } from "$lib/helper-functions/shareList";
 
 	export let data: PageData;
 
@@ -181,6 +182,11 @@
 	<p>*********************</p>
 	<div>
 		<button on:click={() => newItemModal?.showModal()}>Item +</button>
+	</div>
+	<br>
+	<div>
+		<button on:click={() => shareCategory(category, $items)}>Share</button>
+		<button on:click={() => copyCategoryAsText(category, $items)}>Copy as text</button>
 	</div>
 	<dialog bind:this={newItemModal}>
 		<h3>New Item</h3>
