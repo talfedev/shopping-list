@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import type { Category, Item } from '$lib/types/myTypes';
-	// import { isCategory } from '$lib/types/myTypes';
+	import { isCategory } from '$lib/types/myTypesFunctions';
 	import { items, categories, orderedCategories } from '$lib/stores/allStores';
 
 	export let data: PageData;
@@ -48,7 +48,7 @@
 		{#each columns as col}
 			<div class="col">
 				{#each col as element}
-					{#if !element.category}
+					{#if isCategory(element)}
 						<h2>{element.name}</h2>
 						<hr />
 					{:else}
