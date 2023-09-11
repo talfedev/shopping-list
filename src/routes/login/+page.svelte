@@ -1,6 +1,8 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { user } from '$lib/stores/userStore';
+	import { language } from '$lib/stores/allStores';
+	import { languages } from '$lib/languages';
 	import { signin, createUser, passwordSignin } from '$lib/firebase/auth';
 	import { goto } from '$app/navigation';
 
@@ -34,13 +36,13 @@
 </script>
 
 <div class="main">
-	<h2>Sign in / Sign up</h2>
+	<h2>{languages.content.signin[$language]} / {languages.content.signup[$language]}</h2>
 	<div class="buttons">
-		<input bind:value={pageFields.email} type="email" placeholder="Email">
-		<input bind:value={pageFields.password} type="password" placeholder="Password">
-		<button on:click={handleSignin}>Sign in</button>
-		<button on:click={handleRegister}>Sign up</button>
-		<button class="google" on:click={signin}>Google</button>
+		<input class:rtl={$language === 'he'} bind:value={pageFields.email} type="email" placeholder={languages.content.email[$language]}>
+		<input class:rtl={$language === 'he'} bind:value={pageFields.password} type="password" placeholder={languages.content.password[$language]}>
+		<button on:click={handleSignin}>{languages.buttons.signin[$language]}</button>
+		<button on:click={handleRegister}>{languages.buttons.signup[$language]}</button>
+		<button class="google" on:click={signin}>{languages.buttons.googleSignin[$language]}</button>
 	</div>
 	<!-- <div>
 		<a href="/">home</a>
@@ -79,5 +81,9 @@
 	input {
 		font-size: 1rem;
 		padding: 5px;
+	}
+
+	.rtl {
+		direction: rtl;
 	}
 </style>

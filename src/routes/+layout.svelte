@@ -1,8 +1,10 @@
 <script>
 	import '../app.css';
+	import { languages } from '$lib/languages';
+	import { language } from '$lib/stores/allStores';
 </script>
 
-<h1>Shopping List</h1>
+<h1>{languages.content.title[$language]}</h1>
 <slot />
 
 <style lang="scss">

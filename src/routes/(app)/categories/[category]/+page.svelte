@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import type { Category, Item } from '$lib/types/myTypes';
-	import { items, categories, orderedCategories } from '$lib/stores/allStores';
+	import { items, categories, orderedCategories, language } from '$lib/stores/allStores';
 	import { addItem, deleteItem, toggleItem, updateItem, transferItem, moveItems } from '$lib/firebase/firestore';
 	import { shareCategory, copyCategoryAsText } from "$lib/helper-functions/shareList";
+	import { languages } from '$lib/languages';
 
 	export let data: PageData;
 
@@ -121,6 +122,7 @@
 
 	const reorderItems = () => {
 		moveItems(category.id, moveItemInfo.items);
+		moveItemInfo.items = [];
 		closeModal();
 	}
 
@@ -140,40 +142,49 @@
 			moveItemInfo.to = -1;
 		}
 	}
+
+	const setLanguage = (lang: 'en'|'he') => {
+		$language = lang;
+		localStorage.setItem('language', lang);
+	}
 </script>
 
 <section>
-	<button class="mode-button" on:click={openMoveItemsModal}>Move items</button>
+	<div class="buttons">
+		<button on:click={() => setLanguage('en')}>English</button>
+		<button on:click={() => setLanguage('he')}>{languages.buttons.hebrew[$language]}</button>
+		<button class="mode-button" on:click={openMoveItemsModal}>{languages.buttons.moveItems[$language]}</button>
+	</div>
 	<div class="back-arrow">
 		<a href="/">←</a>
 	</div>
 	<h2 class="title">{data.category.name}</h2>
-	<div class="items">
+	<div class={`${$language === 'en'? 'itemsL': 'itemsR'}`}>
 		{#each category.items as itemId (itemId)}
 			{#if $items[itemId] && !$items[itemId].checked}
-				<div class="item-wrapper">
+				<div class="item-wrapper" class:rtl={$language === 'he'}>
 					<p class="item">{$items[itemId].name}</p>
 					<div>
 						<input type="checkbox" checked={$items[itemId].checked} on:change={() => toggleItem({id: itemId, checked: !$items[itemId].checked})}>
-						<button on:click={() => openTransferModal($items[itemId])}>Transfer</button>
-						<button on:click={() => openEditModal($items[itemId])}>Edit</button>
-						<button on:click={() => deleteItem(itemId, category.id)}>Delete</button>
+						<button on:click={() => openTransferModal($items[itemId])}>{languages.buttons.transfer[$language]}</button>
+						<button on:click={() => openEditModal($items[itemId])}>{languages.buttons.edit[$language]}</button>
+						<button on:click={() => deleteItem(itemId, category.id)}>{languages.buttons.delete[$language]}</button>
 					</div>
 				</div>
 			{/if}
 		{/each}
 	</div>
 	<p>--------------------</p>
-	<div class="items">
+	<div class={`${$language === 'en'? 'itemsL': 'itemsR'}`}>
 		{#each category.items as itemId (itemId)}
 			{#if $items[itemId] && $items[itemId].checked}
-				<div class="item-wrapper">
+				<div class="item-wrapper" class:rtl={$language === 'he'}>
 					<p class="item crossed">{$items[itemId].name}</p>
 					<div>
 						<input type="checkbox" checked={$items[itemId].checked} on:change={() => toggleItem({id: itemId, checked: !$items[itemId].checked})}>
-						<button on:click={() => openTransferModal($items[itemId])}>Transfer</button>
-						<button on:click={() => openEditModal($items[itemId])}>Edit</button>
-						<button on:click={() => deleteItem(itemId, category.id)}>Delete</button>
+						<button on:click={() => openTransferModal($items[itemId])}>{languages.buttons.transfer[$language]}</button>
+						<button on:click={() => openEditModal($items[itemId])}>{languages.buttons.edit[$language]}</button>
+						<button on:click={() => deleteItem(itemId, category.id)}>{languages.buttons.delete[$language]}</button>
 					</div>
 				</div>
 			{/if}
@@ -181,39 +192,46 @@
 	</div>
 	<p>*********************</p>
 	<div>
-		<button on:click={() => newItemModal?.showModal()}>Item +</button>
+		<button on:click={() => newItemModal?.showModal()}>{languages.buttons.itemPlus[$language]}</button>
 	</div>
 	<br>
 	<div>
-		<button on:click={() => shareCategory(category, $items)}>Share</button>
-		<button on:click={() => copyCategoryAsText(category, $items)}>Copy as text</button>
+		<button on:click={() => shareCategory(category, $items)}>{languages.buttons.share[$language]}</button>
+		<button on:click={() => copyCategoryAsText(category, $items)}>{languages.buttons.copyAsText[$language]}</button>
 	</div>
+
+	<!-- DIALOGS -->
+	<!-- New Item -->
 	<dialog bind:this={newItemModal}>
-		<h3>New Item</h3>
-		<input type="text" bind:value={itemFields.name} placeholder="name">
+		<h3>{languages.content.newItem[$language]}</h3>
+		<input class:rtl={$language === 'he'} type="text" bind:value={itemFields.name} placeholder={languages.content.name[$language]}>
 		<br>
-		<input type="text" bind:value={itemFields.description} placeholder="description">
+		<input class:rtl={$language === 'he'} type="text" bind:value={itemFields.description} placeholder={languages.content.description[$language]}>
 		<br>
-		<input type="text" bind:value={itemFields.quantity} placeholder="quantity">
+		<input class:rtl={$language === 'he'} type="text" bind:value={itemFields.quantity} placeholder={languages.content.quantity[$language]}>
 		<br>
-		<button on:click={closeModal}>close</button>
-		<button on:click={createNewItem}>Add</button>
+		<button on:click={closeModal}>{languages.buttons.close[$language]}</button>
+		<button on:click={createNewItem}>{languages.buttons.add[$language]}</button>
 	</dialog>
+	
+	<!-- Edit Item -->
 	<dialog bind:this={editItemModal}>
-		<h3>Edit Item</h3>
-		<input type="text" bind:value={itemFields.name} placeholder="name">
+		<h3>{languages.content.editItem[$language]}</h3>
+		<input class:rtl={$language === 'he'} type="text" bind:value={itemFields.name} placeholder={languages.content.name[$language]}>
 		<br>
-		<input type="text" bind:value={itemFields.description} placeholder="description">
+		<input class:rtl={$language === 'he'} type="text" bind:value={itemFields.description} placeholder={languages.content.description[$language]}>
 		<br>
-		<input type="text" bind:value={itemFields.quantity} placeholder="quantity">
+		<input class:rtl={$language === 'he'} type="text" bind:value={itemFields.quantity} placeholder={languages.content.quantity[$language]}>
 		<br>
-		<button on:click={closeModal}>close</button>
-		<button on:click={editItem}>Edit</button>
+		<button on:click={closeModal}>{languages.buttons.close[$language]}</button>
+		<button on:click={editItem}>{languages.buttons.edit[$language]}</button>
 	</dialog>
+
+	<!-- Transfer Item -->
 	<dialog bind:this={transferModal}>
-		<h3>Transfer Item</h3>
+		<h3>{languages.content.transferItem[$language]}</h3>
 		<select name="" id="" bind:value={selectedTransferCategory}>
-			<option value="default" selected>Choose category</option>
+			<option value="default" selected>{languages.content.chooseCategory[$language]}</option>
 			{#each $orderedCategories as categoryId (categoryId)}
 				{#if category.id !== $categories[categoryId].id}
 					<option value={categoryId}>{$categories[categoryId].name}</option>
@@ -221,11 +239,13 @@
 			{/each}
 		</select>
 		<br>
-		<button on:click={closeModal}>close</button>
-		<button on:click={changeItemCategory}>Transfer</button>
+		<button on:click={closeModal}>{languages.buttons.close[$language]}</button>
+		<button on:click={changeItemCategory}>{languages.buttons.transfer[$language]}</button>
 	</dialog>
+
+	<!-- Move Items -->
 	<dialog bind:this={moveItemsModal}>
-		<h3>Move items</h3>
+		<h3>{languages.content.moveItems[$language]}</h3>
 		<p>Mode: {moveMode}</p>
 		<div class="move-items-wrapper">
 			{#each moveItemInfo.items as itemId, index (itemId)}
@@ -239,8 +259,8 @@
 			{/each}
 		</div>
 		<br>
-		<button on:click={closeModal}>close</button>
-		<button on:click={reorderItems}>Done</button>
+		<button on:click={closeModal}>{languages.buttons.close[$language]}</button>
+		<button on:click={reorderItems}>{languages.buttons.done[$language]}</button>
 	</dialog>
 </section>
 
@@ -251,14 +271,17 @@
 		margin: 0 auto;
 	}
 
-	.mode-button {
-		display: block;
-		width: 100%;
+	.buttons {
 		background-color: gray;
-		color: white;
-		border: none;
 		padding: 5px 0;
+		
+		button {
+			padding: 5px;
+			border-radius: 4px;
+			border: 1px solid black;
+		}
 	}
+
 
 	.back-arrow {
 		text-align: left;
@@ -277,14 +300,22 @@
 		margin: 10px 0;
 	}
 
-	.items {
+	.itemsL {
 		text-align: left;
+	}
+
+	.itemsR {
+		text-align: right;
 	}
 
 	.item-wrapper {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+	}
+
+	.rtl {
+		direction: rtl;	
 	}
 	
 	.item {

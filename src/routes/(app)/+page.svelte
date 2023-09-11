@@ -2,16 +2,16 @@
 
 <script lang="ts">
 	import type { PageData } from './$types';
-	import { signin, signout } from '$lib/firebase/auth';
+	import { signout } from '$lib/firebase/auth';
 	import { user } from '$lib/stores/userStore';
-	import { categories, items, orderedCategories } from '$lib/stores/allStores';
+	import { categories, items, orderedCategories, language } from '$lib/stores/allStores';
 	import { addCategory, deleteCategory, updateCategory, moveCategories } from '$lib/firebase/firestore';
 	import type { Category, NewCategory } from '$lib/types/myTypes';
 	import { copyListAsText, shareFullList } from '$lib/helper-functions/shareList';
+	import { languages } from '$lib/languages';
 
 	export let data: PageData;
 
-	let language: 'en' | 'he' = 'en';
 	let addModal: HTMLDialogElement | null;
 	let editModal: HTMLDialogElement | null;
 	let moveCategoriesModal: HTMLDialogElement | null;
@@ -65,6 +65,7 @@
 
 	const reorderCategories = () => {
 		moveCategories(moveCategoryInfo.categories);
+		moveCategoryInfo.categories = [];
 		closeModal();
 	}
 
@@ -84,29 +85,34 @@
 			moveCategoryInfo.to = -1;
 		}
 	}
+
+	const setLanguage = (lang: 'en'|'he') => {
+		$language = lang;
+		localStorage.setItem('language', lang);
+	}
 </script>
 
 <main>
 	{#if $currentUser}
 		<div class="languages">
-			<button on:click={() => (language = 'en')}>English</button>
-			<button on:click={() => (language = 'he')}>Hebrew</button>
-			<button on:click={openMoveCategoriesModal}>Move categories</button>
+			<button on:click={() => setLanguage('en')}>English</button>
+			<button on:click={() => setLanguage('he')}>{languages.buttons.hebrew[$language]}</button>
+			<button on:click={openMoveCategoriesModal}>{languages.buttons.moveCategories[$language]}</button>
 			<a href="/print"><button>P</button></a>
 		</div>
-		<div class={language === 'en' ? 'categoriesL' : 'categoriesR'}>
+		<div class={$language === 'en' ? 'categoriesL' : 'categoriesR'}>
 			{#each $orderedCategories as categoryId (categoryId)}
 				{#if $categories[categoryId]}
 					<div class="category-wrap">
 						<a href="categories/{$categories[categoryId].name}?id={categoryId}">
-							<h3 class="{language === 'en' ? 'categoryL' : 'categoryR'} category">
+							<h3 class="{$language === 'en' ? 'categoryL' : 'categoryR'} category">
 								{$categories[categoryId].name}
 							</h3>
 						</a>
 						<div>
 							<span>{$categories[categoryId].items.filter((itemId) => !$items[itemId]?.checked).length || ''}</span>
-							<button on:click={() => openEditModal($categories[categoryId])}>Edit</button>
-							<button on:click={() => deleteCategory($categories[categoryId])}>Delete</button>
+							<button on:click={() => openEditModal($categories[categoryId])}>{languages.buttons.edit[$language]}</button>
+							<button on:click={() => deleteCategory($categories[categoryId])}>{languages.buttons.delete[$language]}</button>
 						</div>
 					</div>
 				{/if}
@@ -114,42 +120,41 @@
 		</div>
 		<br />
 		<div>
-			<button on:click={() => addModal?.showModal()}>Category +</button>
+			<button on:click={() => addModal?.showModal()}>{languages.buttons.categoryPlus[$language]}</button>
 		</div>
 		<div>
 			<br>
-			<button on:click={() => shareFullList($orderedCategories, $categories, $items)}>Share</button>
-			<button on:click={() => copyListAsText($orderedCategories, $categories, $items)}>Copy list to clipboard</button>
+			<button on:click={() => shareFullList($orderedCategories, $categories, $items)}>{languages.buttons.share[$language]}</button>
+			<button on:click={() => copyListAsText($orderedCategories, $categories, $items)}>{languages.buttons.copyListToClipboard[$language]}</button>
 		</div>
 		<br />
 		<p>hi {$currentUser?.email}</p>
-		<button on:click={signout}>sign out</button>
+		<button on:click={signout}>{languages.buttons.signout[$language]}</button>
 	{:else}
-		<p>you're not logged in</p>
-		<button on:click={signin}>signin/up</button>
+		<p>{languages.content.notLoggedIn[$language]}</p>
 	{/if}
 	<div class="dialog">
 		<dialog bind:this={addModal}>
-			<h3>Category Name (new)</h3>
+			<h3>{languages.content.newCategoryName[$language]}</h3>
 			<input type="text" bind:value={categoryInput} />
 			<br />
-			<button on:click={() => createNewCategory({ name: categoryInput })}>Add</button>
-			<button on:click={closeModal}>Close</button>
+			<button on:click={() => createNewCategory({ name: categoryInput })}>{languages.buttons.add[$language]}</button>
+			<button on:click={closeModal}>{languages.buttons.close[$language]}</button>
 		</dialog>
 	</div>
 	<div class="dialog">
 		<dialog bind:this={editModal}>
-			<h3>Category Name (edit)</h3>
+			<h3>{languages.content.editCategoryName[$language]}</h3>
 			<input type="text" bind:value={categoryInput} />
 			<br />
 			<button on:click={() => editCategory({ id: selectedCategoryId, name: categoryInput })}
-				>Edit</button
+				>{languages.buttons.edit[$language]}</button
 			>
-			<button on:click={closeModal}>Close</button>
+			<button on:click={closeModal}>{languages.buttons.close[$language]}</button>
 		</dialog>
 	</div>
 	<dialog bind:this={moveCategoriesModal}>
-		<h3>Move Categories</h3>
+		<h3>{languages.content.moveCategories[$language]}</h3>
 		<p>Mode: {moveMode}</p>
 		<div class="move-categories-wrapper">
 			{#each moveCategoryInfo.categories as categoryId, index (categoryId)}
@@ -163,8 +168,8 @@
 			{/each}
 		</div>
 		<br>
-		<button on:click={closeModal}>close</button>
-		<button on:click={reorderCategories}>Done</button>
+		<button on:click={closeModal}>{languages.buttons.close[$language]}</button>
+		<button on:click={reorderCategories}>{languages.buttons.done[$language]}</button>
 	</dialog>
 </main>
 
