@@ -2,7 +2,7 @@
 	import type { PageData } from './$types';
 	import type { Category, Item } from '$lib/types/myTypes';
 	import { isCategory } from '$lib/types/myTypesFunctions';
-	import { items, categories, orderedCategories } from '$lib/stores/allStores';
+	import { items, categories, orderedCategories, language } from '$lib/stores/allStores';
 
 	export let data: PageData;
 
@@ -42,9 +42,9 @@
 </script>
 
 <main>
-	<div class="columns-wrapper">
+	<div class="columns-wrapper" class:rtl={$language === 'he'}>
 		{#each columns as col}
-			<div class="col">
+			<div class="col" class:rtl={$language === 'he'}>
 				{#each col as element}
 					{#if isCategory(element)}
 						<h2>{element.name}</h2>
@@ -89,5 +89,9 @@
 
 	.col {
 		display: inline-block;
+	}
+
+	.rtl {
+		direction: rtl;
 	}
 </style>
