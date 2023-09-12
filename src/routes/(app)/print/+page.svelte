@@ -24,7 +24,7 @@
 			}
 
 			$categories[categoryId].items.forEach((itemId) => {
-				if(!$items[itemId].checked) {
+				if (!$items[itemId].checked) {
 					if (itemsInCol <= COL_SIZE - 1) {
 						itemsInCol++;
 						columns[currentCol].push($items[itemId]);
@@ -42,6 +42,9 @@
 </script>
 
 <main>
+	<a href="/" class="back-btn">
+		<button>←</button>
+	</a>
 	<div class="columns-wrapper" class:rtl={$language === 'he'}>
 		{#each columns as col}
 			<div class="col" class:rtl={$language === 'he'}>
@@ -93,5 +96,15 @@
 
 	.rtl {
 		direction: rtl;
+	}
+
+	button {
+		padding: 5px;
+	}
+
+	@media print {
+		.back-btn {
+			display: none;
+		}
 	}
 </style>

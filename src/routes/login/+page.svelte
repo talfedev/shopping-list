@@ -33,9 +33,17 @@
 		pageFields.password = '';
 	}
 
+	const setLanguage = (lang: 'en'|'he') => {
+		$language = lang;
+		localStorage.setItem('language', lang);
+	}
 </script>
 
 <div class="main">
+	<div class="lang-btns">
+		<button on:click={() => setLanguage('en')}>English</button>
+		<button on:click={() => setLanguage('he')}>עברית</button>
+	</div>
 	<h2>{languages.content.signin[$language]} / {languages.content.signup[$language]}</h2>
 	<div class="buttons">
 		<input class:rtl={$language === 'he'} bind:value={pageFields.email} type="email" placeholder={languages.content.email[$language]}>
@@ -44,17 +52,26 @@
 		<button on:click={handleRegister}>{languages.buttons.signup[$language]}</button>
 		<button class="google" on:click={signin}>{languages.buttons.googleSignin[$language]}</button>
 	</div>
-	<!-- <div>
-		<a href="/">home</a>
-	</div> -->
 </div>
 
-<style>
+<style lang="scss">
 	.main {
-		padding-top: 30px;
+		// padding-top: 30px;
 		text-align: center;
 		max-width: 400px;
 		margin: 0 auto;
+		position: relative;
+	}
+
+	.lang-btns {
+		background-color: lightgray;
+		padding: 5px 0;
+		margin-bottom: 10px;
+
+		button {
+			padding: 5px;
+			font-size: 16px;
+		}
 	}
 
 	.buttons {
