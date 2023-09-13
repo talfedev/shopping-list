@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import { user } from '$lib/stores/userStore';
-	import { language } from '$lib/stores/allStores';
+	import { language, userLoading } from '$lib/stores/allStores';
 	import { languages } from '$lib/languages';
 	import { signin, createUser, passwordSignin } from '$lib/firebase/auth';
 	import { goto } from '$app/navigation';
@@ -18,19 +18,34 @@
 	}
 	
 	const handleSignin = () => {
-		passwordSignin(pageFields.email, pageFields.password);
-
+		$userLoading = true;
+		
+		//get fields' value
+		const { email, password } = pageFields;
+		
 		//clear fields
 		pageFields.email = '';
 		pageFields.password = '';
+		
+		passwordSignin(email, password);
 	}
 
 	const handleRegister = () => {
-		createUser(pageFields.email, pageFields.password);
-
+		$userLoading = true;
+		
+		//get fields' value
+		const { email, password } = pageFields;
+		
 		//clear fields
 		pageFields.email = '';
 		pageFields.password = '';
+		
+		createUser(email, password);
+	}
+
+	const googleSignin = () => {
+		$userLoading = true;
+		signin()
 	}
 
 	const setLanguage = (lang: 'en'|'he') => {
@@ -40,18 +55,22 @@
 </script>
 
 <div class="main">
-	<div class="lang-btns">
-		<button on:click={() => setLanguage('en')}>English</button>
-		<button on:click={() => setLanguage('he')}>עברית</button>
-	</div>
-	<h2>{languages.content.signin[$language]} / {languages.content.signup[$language]}</h2>
-	<div class="buttons">
-		<input class:rtl={$language === 'he'} bind:value={pageFields.email} type="email" placeholder={languages.content.email[$language]}>
-		<input class:rtl={$language === 'he'} bind:value={pageFields.password} type="password" placeholder={languages.content.password[$language]}>
-		<button on:click={handleSignin}>{languages.buttons.signin[$language]}</button>
-		<button on:click={handleRegister}>{languages.buttons.signup[$language]}</button>
-		<button class="google" on:click={signin}>{languages.buttons.googleSignin[$language]}</button>
-	</div>
+	{#if !$userLoading}
+		<div class="lang-btns">
+			<button on:click={() => setLanguage('en')}>English</button>
+			<button on:click={() => setLanguage('he')}>עברית</button>
+		</div>
+		<h2>{languages.content.signin[$language]} / {languages.content.signup[$language]}</h2>
+		<div class="buttons">
+			<input class:rtl={$language === 'he'} bind:value={pageFields.email} type="email" placeholder={languages.content.email[$language]}>
+			<input class:rtl={$language === 'he'} bind:value={pageFields.password} type="password" placeholder={languages.content.password[$language]}>
+			<button on:click={handleSignin}>{languages.buttons.signin[$language]}</button>
+			<button on:click={handleRegister}>{languages.buttons.signup[$language]}</button>
+			<button class="google" on:click={googleSignin}>{languages.buttons.googleSignin[$language]}</button>
+		</div>
+	{:else}
+		<h2>Verifiying user...</h2>
+	{/if}
 </div>
 
 <style lang="scss">

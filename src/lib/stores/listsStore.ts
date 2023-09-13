@@ -1,6 +1,7 @@
 import { onSnapshot } from 'firebase/firestore';
 import { writable } from 'svelte/store';
 import { listsCollection } from '$lib/firebase/firestore';
+import { dataLoading } from './allStores';
 // import type { Category } from '$lib/types/myTypes';
 
 /**
@@ -15,6 +16,7 @@ const listsStore = () => {
 	const { subscribe } = writable<string[]>([], (set) => {
 		const unsubscribe = onSnapshot(listsCollection, (snapshot) => {
 			console.log('listsStore updated!');
+			dataLoading.update(prev => ({...prev, lists: false}));
 			let sortedCategories: string[] = [];
 			snapshot.forEach(doc => {
 				sortedCategories = doc.data().categories;

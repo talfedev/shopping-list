@@ -1,6 +1,7 @@
 import { onSnapshot } from 'firebase/firestore';
 import { writable } from 'svelte/store';
 import { categoriesCollection } from '$lib/firebase/firestore';
+import { dataLoading } from './allStores';
 import type { Category } from '$lib/types/myTypes';
 
 const categoriesStore = () => {
@@ -8,6 +9,7 @@ const categoriesStore = () => {
 		const categories: {[key: string]: Category} = {};
 		const unsubscribe = onSnapshot(categoriesCollection, (snapshot) => {
 			console.log('categoriesStore updated!');
+			dataLoading.update(prev => ({...prev, categories: false}));
 			snapshot.docChanges().forEach(change => {
 				if (change.type === 'removed') {
 					delete categories[change.doc.id];

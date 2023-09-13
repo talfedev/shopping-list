@@ -2,6 +2,9 @@
 	import '../app.css';
 	import { languages } from '$lib/languages';
 	import { language } from '$lib/stores/allStores';
+	import { user } from '$lib/stores/userStore';
+
+	let currentUser = $user;
 </script>
 
 <h1>{languages.content.title[$language]}</h1>

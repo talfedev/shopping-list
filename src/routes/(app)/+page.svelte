@@ -4,7 +4,7 @@
 	import type { PageData } from './$types';
 	import { signout } from '$lib/firebase/auth';
 	import { user } from '$lib/stores/userStore';
-	import { categories, items, orderedCategories, language } from '$lib/stores/allStores';
+	import { categories, items, orderedCategories, language, dataLoading } from '$lib/stores/allStores';
 	import { addCategory, deleteCategory, updateCategory, moveCategories } from '$lib/firebase/firestore';
 	import type { Category, NewCategory } from '$lib/types/myTypes';
 	import { copyListAsText, shareFullList } from '$lib/helper-functions/shareList';
@@ -18,6 +18,7 @@
 	let categoryInput = '';
 	let selectedCategoryId = '';
 	let moveMode: 'source'|'target' = 'source';
+	$: isDataLoading = $dataLoading.items || $dataLoading.categories || $dataLoading.lists;
 
 	const currentUser = user;
 
@@ -93,7 +94,7 @@
 </script>
 
 <main>
-	{#if $currentUser}
+	{#if !isDataLoading}
 		<div class="languages">
 			<button on:click={() => setLanguage('en')}>English</button>
 			<button on:click={() => setLanguage('he')}>{languages.buttons.hebrew[$language]}</button>
@@ -131,7 +132,7 @@
 		<p>hi {$currentUser?.email}</p>
 		<button on:click={signout}>{languages.buttons.signout[$language]}</button>
 	{:else}
-		<p>{languages.content.notLoggedIn[$language]}</p>
+		<h2>Loading list data...</h2>
 	{/if}
 	<div class="dialog">
 		<dialog bind:this={addModal}>
