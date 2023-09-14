@@ -15,6 +15,8 @@
 	let selectedItem: Item | null;
 	let selectedTransferCategory = 'default';
 	let moveMode: 'source'|'target' = 'source';
+	let expandedItem: Item | null = null;
+
 
 	let category: Category;
 	$: category = $categories[data.category.id || ''] || {id:'error',name:'Error',items: []};
@@ -147,6 +149,14 @@
 		$language = lang;
 		localStorage.setItem('language', lang);
 	}
+
+	const toggleItemExpansion = (item: Item) => {
+		if(expandedItem === item) {
+			expandedItem = null;
+		} else {
+			expandedItem = item;
+		}
+	}
 </script>
 
 <section>
@@ -159,11 +169,21 @@
 		<a href="/">←</a>
 	</div>
 	<h2 class="title">{data.category.name}</h2>
+	
+	<!-- unchecked items -->
 	<div class={`${$language === 'en'? 'itemsL': 'itemsR'}`}>
 		{#each category.items as itemId (itemId)}
 			{#if $items[itemId] && !$items[itemId].checked}
 				<div class="item-wrapper" class:rtl={$language === 'he'}>
-					<p class="item">{$items[itemId].name}</p>
+					<div class="item">
+						<p on:click={() => toggleItemExpansion($items[itemId])}>{$items[itemId].name}</p>
+						{#if expandedItem && expandedItem.id === itemId}
+							<div>
+								<p>description: {expandedItem.description}</p>
+								<p>quantity: {expandedItem.quantity}</p>
+							</div>
+						{/if}
+					</div>
 					<div>
 						<input type="checkbox" checked={$items[itemId].checked} on:change={() => toggleItem({id: itemId, checked: !$items[itemId].checked})}>
 						<button on:click={() => openTransferModal($items[itemId])}>{languages.buttons.transfer[$language]}</button>
@@ -175,11 +195,21 @@
 		{/each}
 	</div>
 	<p>--------------------</p>
+
+	<!-- checked items -->
 	<div class={`${$language === 'en'? 'itemsL': 'itemsR'}`}>
 		{#each category.items as itemId (itemId)}
 			{#if $items[itemId] && $items[itemId].checked}
 				<div class="item-wrapper" class:rtl={$language === 'he'}>
-					<p class="item crossed">{$items[itemId].name}</p>
+					<div class="item crossed">
+						<p on:click={() => toggleItemExpansion($items[itemId])}>{$items[itemId].name}</p>
+						{#if expandedItem && expandedItem.id === itemId}
+							<div>
+								<p>description: {expandedItem.description}</p>
+								<p>quantity: {expandedItem.quantity}</p>
+							</div>
+						{/if}
+					</div>
 					<div>
 						<input type="checkbox" checked={$items[itemId].checked} on:change={() => toggleItem({id: itemId, checked: !$items[itemId].checked})}>
 						<button on:click={() => openTransferModal($items[itemId])}>{languages.buttons.transfer[$language]}</button>
